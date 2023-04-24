@@ -3,9 +3,39 @@ local luau_asm = { }
 --// Modules
 local fmt = require("logger")
 
--- Implement a trimmer to get rid of whitespace chars
-function _G.string.trim(s: string): string
-	return string.gsub(s, "%s", "")
+
+--// Utils
+local function deep_copy(orig)
+	local copy = {}
+	for k, v in pairs(orig) do
+		if type(v) == "table" then
+			v = deep_copy(v)
+		end
+
+		copy[k] = v
+	end
+	return copy
+end
+
+local string = deep_copy(_G.string)
+
+
+-- Implement a trimmer to get rid of excess whitespace chars
+function string.trim(s: string): string
+	return string.gsub(s, "%s+", ";")
+end
+
+function string.split(s: string, sep: string)
+	if sep == nil then
+                sep = "%s"
+        end
+
+        local t={}
+
+        for str in string.gmatch(s, "([^"..sep.."]+)") do
+                table.insert(t, str)
+        end
+        return t
 end
 
 function luau_asm.load_asm(asm: string)
@@ -33,7 +63,7 @@ function trim_for_initializer(s: {[number]: string})
 		end
 	end
 	
-	assert(rawlen(s) == 2, "panic: located more than one start")
+	assert(#s >= 3, "panic: located more than one start")
 end
 
 
@@ -86,9 +116,9 @@ function exec(start: string, asm: string)
 		["INC"] = { 
 			["args"] = { "MEM_REG", "REG_OFFSET", "INC_VAL" },
 			["impl"] = function(...) 
-				local reg = select(1, ...)
-				local offset = select(2, ...)
-				local val = select(3, ...)
+				local reg = select(1, ...):gsub(",", "")
+				local offset = select(2, ...):gsub(",", "")
+				local val = select(3, ...):gsub(",", "")
 				
 				virt_mem[reg](offset, virt_mem[reg][offset] + val)
 			end,
@@ -96,8 +126,8 @@ function exec(start: string, asm: string)
 		["MOV"] = { 
 			["args"] = { "MEM_ORIG_REG", "MEM_FINAL_REG" },
 			["impl"] = function(...)
-				local orig_reg = select(1, ...)
-				local final_reg = select(2, ...)
+				local orig_reg = select(1, ...):gsub(",", "")
+				local final_reg = select(2, ...):gsub(",", "")
 				
 				final_reg = orig_reg
 				orig_reg = {}
@@ -106,18 +136,22 @@ function exec(start: string, asm: string)
 		["ADDC"] = { 
 			["args"] = { "MEM_VAR_1", "MEM_VAR_2" },
 			["impl"] = function(...)
-				return select(1, ...) + select(2, ...)
+				return select(1, ...):gsub(",", "") + select(2, ...):gsub(",", "")
 			end,
 		}
 	}
 	
-	local function parseNext(instruction: string)
+	local function parse_next(instruction: string)
 		local instrs: string = string.trim(instruction)
-		local splitted_instr = instrs:split(" ")
+		local splitted_instr = string.split(instrs, ";")
+
 		local true_instr = splitted_instr[1]
-		local args = table.remove(splitted_instr, 1)
-		
-		local expected_argc = #((available_instructions[true_instr])["args"])
+
+		table.remove(splitted_instr, 1)
+
+		local args = splitted_instr
+	
+		local expected_argc = #available_instructions[true_instr]["args"]
 		
 		assert(
 			#args == expected_argc,
@@ -136,17 +170,18 @@ function exec(start: string, asm: string)
 	local instructions = string.split(asm, "\n")
 	
 	table.remove(instructions, 1)
-	table.remove(instructions, 2)
-	
-	for pos, line in instructions do
-		if string.match(line, "_" .. start .. ":") then
+	table.remove(instructions, 1)
+
+	for pos, line in instructions do	
+		table.remove(instructions, pos)
+
+		if string.gmatch(line, "_" .. "start" .. ":") then
+			table.remove(instructions, pos)
 			break
 		end
-		
-		table.remove(instructions, pos)
 	end
 	
-	for _, instr in instructions do parseNext(instr) end
+	for _, instr in instructions do parse_next(instr) end
 end
 
 return luau_asm
