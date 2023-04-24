@@ -24,16 +24,16 @@ function locate__start(input: string): (boolean, string)
 end
 
 -- Trims the asm set from anything which is not an initializer
-function trim_for_initializer(s: {[number]: string})
-	for i, l in s do
+function trim_for_initializer(t: {[number]: string})
+	for i, l in t do
 		if i > 2 then
-			table.remove(s, i)
+			table.remove(t, i)
 		else
 			continue
 		end
 	end
 	
-	assert(rawlen(s) == 2, "panic: located more than one start")
+	assert(#t == 2, "panic: located more than one start")
 end
 
 
