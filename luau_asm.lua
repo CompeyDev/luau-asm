@@ -6,7 +6,7 @@ local fmt = require("logger")
 
 --// Utils
 local function deep_copy(orig)
-	local copy = {}
+	local copy = { }
 	for k, v in pairs(orig) do
 		if type(v) == "table" then
 			v = deep_copy(v)
@@ -30,7 +30,7 @@ function string.split(s: string, sep: string)
                 sep = "%s"
         end
 
-        local t={}
+        local t={ }
 
         for str in string.gmatch(s, "([^"..sep.."]+)") do
                 table.insert(t, str)
@@ -63,7 +63,7 @@ function trim_for_initializer(t: {[number]: string})
 		end
 	end
 	
-	assert(#t == 2, "panic: located more than one start")
+	assert(#t >= 3, "panic: located more than one start")
 end
 
 
@@ -141,7 +141,7 @@ function exec(start: string, asm: string)
 		}
 	}
 	
-	local function parse_next(instruction: string)
+	local function parse_next(instruction: string): ((...any) -> any, {[number]: string})
 		local instrs: string = string.trim(instruction)
 		local splitted_instr = string.split(instrs, ";")
 
@@ -164,7 +164,7 @@ function exec(start: string, asm: string)
 		
 		local instr_impl: (...any) -> any = (available_instructions[true_instr])["impl"]
 		
-		instr_impl(table.unpack(args))
+		return instr_impl, args
 	end
 	
 	local instructions = string.split(asm, "\n")
@@ -181,7 +181,11 @@ function exec(start: string, asm: string)
 		end
 	end
 	
-	for _, instr in instructions do parse_next(instr) end
+	for _, instr in instructions do 
+		local instr_impl, args = parse_next(instr)
+
+		instr_impl(table.unpack(args))
+	end
 end
 
 return luau_asm
