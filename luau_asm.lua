@@ -18,7 +18,7 @@ local function deep_copy(orig)
 end
 
 local string = deep_copy(_G.string)
-
+type string = typeof(string)
 
 -- Implement a trimmer to get rid of excess whitespace chars
 function string.trim(s: string): string
