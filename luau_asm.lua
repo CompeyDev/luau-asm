@@ -55,7 +55,7 @@ end
 
 -- Trims the asm set from anything which is not an initializer
 function trim_for_initializer(t: {[number]: string})
-	for i, l in t do
+	for i, _ in t do
 		if i > 2 then
 			table.remove(t, i)
 		else
@@ -97,12 +97,12 @@ function exec(start: string, asm: string)
 	}
 	
 	setmetatable(virt_mem, {
-		__newindex = function (_tbl, reg, val)
-			fmt.log(
-				string.format("registry %s updated with contents of size %x", #val), 
-				fmt.Scopes.Runtime
-			)
-		end,
+		-- __newindex = function (_tbl, reg, val)
+		-- 	fmt.log(
+		-- 		string.format("registry %s updated with contents of size %x", reg, #val), 
+		-- 		fmt.Scopes.Runtime
+		-- 	)
+		-- end,
 		
 		__call = function (reg, ...)
 			local offset = select(1, ...)
@@ -126,11 +126,11 @@ function exec(start: string, asm: string)
 		["MOV"] = { 
 			["args"] = { "MEM_ORIG_REG", "MEM_FINAL_REG" },
 			["impl"] = function(...)
-				local orig_reg = select(1, ...):gsub(",", "")
-				local final_reg = select(2, ...):gsub(",", "")
+				local orig_val_or_reg = select(2, ...):gsub(",", "")
+				local final_reg = select(1, ...):gsub(",", "")
+				local orig_val = tonumber(orig_val_or_reg)
 				
-				final_reg = orig_reg
-				orig_reg = {}
+				virt_mem[final_reg] = virt_mem[orig_val_or_reg] or orig_val or orig_val_or_reg
 			end,
 		},
 		["ADDC"] = { 
@@ -175,7 +175,7 @@ function exec(start: string, asm: string)
 	for pos, line in instructions do	
 		table.remove(instructions, pos)
 
-		if string.gmatch(line, "_" .. "start" .. ":") then
+		if string.gmatch(line, "_" .. start .. ":") then
 			table.remove(instructions, pos)
 			break
 		end

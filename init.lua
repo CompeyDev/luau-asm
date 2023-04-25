@@ -6,5 +6,6 @@ luau_asm.load_asm([[
 		global _start
 	
 	_start:
-		MOV ECX, EDX
+		MOV ECX, 0x80
+		MOV EDX, ECX
 ]])
