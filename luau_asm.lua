@@ -39,6 +39,7 @@ function string.split(s: string, sep: string)
         return t
 end
 
+-- Loads the requested assembly from a string
 function luau_asm.load_asm(asm: string)
 	call__start(asm)
 end
