@@ -124,7 +124,7 @@ function exec(start: string, asm: string)
 			end,
 		},
 		["MOV"] = { 
-			["args"] = { "MEM_ORIG_REG", "MEM_FINAL_REG" },
+			["args"] = { "MEM_ORIG_REG_OR_VAR", "MEM_FINAL_REG" },
 			["impl"] = function(...)
 				local orig_val_or_reg = select(2, ...):gsub(",", "")
 				local final_reg = select(1, ...):gsub(",", "")
@@ -134,7 +134,7 @@ function exec(start: string, asm: string)
 			end,
 		},
 		["ADDC"] = { 
-			["args"] = { "MEM_VAR_1", "MEM_VAR_2" },
+			["args"] = { "MEM_VAR_OR_REG_1", "MEM_VAR_OR_REG_2" },
 			["impl"] = function(...)
 				return select(1, ...):gsub(",", "") + select(2, ...):gsub(",", "")
 			end,
