@@ -99,8 +99,8 @@ function exec(start: string, asm: string)
 	setmetatable(virt_mem, {
 		__newindex = function (_, reg, val)
 			fmt.log(
-				string.format("registry %s updated with contents ", (reg or "unknown")) 
-				.. val .. 
+				string.format("registry `%s` updated with contents ", (reg or "unknown")) 
+				.. "`" .. val .. "`" ..
 				string.format( " of size %x", (#reg or 0)), 
 
 				fmt.Scopes.Runtime
