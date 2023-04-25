@@ -94,8 +94,8 @@ function exec(start: string, asm: string)
 	-- TODO: Add more instructions
 
 	local virt_mem = {
-		["ECX"] = {}, 
-		["EDX"] = {}, 
+		["ecx"] = {}, 
+		["edx"] = {}, 
 	}
 	
 	setmetatable(virt_mem, {
