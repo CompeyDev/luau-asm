@@ -8,18 +8,18 @@ local fmt = {
 
 function fmt.log(msg: string, scope, dur: number?)
 	if dur then
-		print(string.format("[%s] :: %s -> (%d)", msg, scope, dur))
+		print(string.format("[%s] :: %s -> (%d)", scope, msg, dur))
 	else
-		print(string.format("[%s] :: %s", msg, dur))
+		print(string.format("[%s] :: %s", scope, msg))
 	end
 end
 
 
 function fmt.warn(msg: string, scope, dur: number?)
 	if dur then
-		warn(string.format("[%s] :: %s -> (%d)", msg, scope, dur))
+		warn(string.format("[%s] :: %s -> (%d)", scope, msg, dur))
 	else
-		warn(string.format("[%s] :: %s", msg, dur))
+		warn(string.format("[%s] :: %s", scope, msg))
 	end
 end
 

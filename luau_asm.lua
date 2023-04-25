@@ -22,7 +22,7 @@ local string = deep_copy(_G.string)
 
 -- Implement a trimmer to get rid of excess whitespace chars
 function string.trim(s: string): string
-	return string.gsub(s, "%s+", ";")
+	return string.gsub(s, "%s+", ";") 
 end
 
 function string.split(s: string, sep: string)
@@ -30,7 +30,7 @@ function string.split(s: string, sep: string)
                 sep = "%s"
         end
 
-        local t={ }
+        local t = { }
 
         for str in string.gmatch(s, "([^"..sep.."]+)") do
                 table.insert(t, str)
@@ -63,7 +63,7 @@ function trim_for_initializer(t: {[number]: string})
 		end
 	end
 	
-	assert(#t >= 3, "panic: located more than one start")
+	assert(#t <= 4, "panic: located more than one start")
 end
 
 
@@ -97,12 +97,15 @@ function exec(start: string, asm: string)
 	}
 	
 	setmetatable(virt_mem, {
-		-- __newindex = function (_tbl, reg, val)
-		-- 	fmt.log(
-		-- 		string.format("registry %s updated with contents of size %x", reg, #val), 
-		-- 		fmt.Scopes.Runtime
-		-- 	)
-		-- end,
+		__newindex = function (_, reg, val)
+			fmt.log(
+				string.format("registry %s updated with contents ", (reg or "unknown")) 
+				.. val .. 
+				string.format( " of size %x", (#reg or 0)), 
+
+				fmt.Scopes.Runtime
+			)
+		end,
 		
 		__call = function (reg, ...)
 			local offset = select(1, ...)
