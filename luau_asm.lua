@@ -25,6 +25,7 @@ function string.trim(s: string): string
 	return string.gsub(s, "%s+", ";") 
 end
 
+-- A better string split implementation
 function string.split(s: string, sep: string)
 	if sep == nil then
                 sep = "%s"
